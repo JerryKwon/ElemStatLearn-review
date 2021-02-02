@@ -211,3 +211,119 @@ class k와 l간의 결정경계는 2차 방정식인 $\{x:\delta_k(x)=\delta_l(x
 위의 그림은 결정경계가 2차방정식 즉 곡선의 형태를 나타낸다고 가정했을 때, 접근하는 두 가지 방법론을 나타낸다. 좌측은 feature를 2차식의 형태로 polynomial feature를 만들어 반영하였고, 우측은 QDA를 적용했을 때의 결정경계를 나타낸다. 
 
 QDA의 추정치는 LDA와 각각의 클래스들에 대한 공분산행렬이 다르다는 것만들 제외하면 유사하다. 그러나 차원(컬럼)의 수 p가 늘어나게 되면 추정해야하는 파라미터 또한 엄청나게 증가하게 된다. 
+
+* LDA: (K-1) X (p+1) parameters
+* QDA: (K-1) X {p(p+3)/2+1} parameters
+
+LDA와 QDA가 좋은 결과를 내는 이유는 결정경계를 선형 또는 2차식의 곡선임을 가정할 뿐만 아니라, 각각의 추정해야하는 class들의 분포가 정규분포를 따른다고 가정하기 때문이다. 
+
+### 4.3.1. Regularized Discriminant Analysis
+
+
+## 4.4. Logistic Regression
+
+### Reference
+
+<a href="https://www.youtube.com/watch?v=l_8XEj2_9rk&t=3s">[핵심 머신러닝]로지스틱회귀모델 1</a>
+
+<a href="https://www.youtube.com/watch?v=Vh_7QttroGM">[핵심 머신러닝]로지스틱회귀모델 2</a>
+
+필요성: 회귀모델을 활용하여 범주형 반응 변수를 예측하기 위함.
+
+그러나, 연속적인 값이 아닌 범주형 값이기 때문에 다른 방식으로 접근해야 할 것이다. 
+
+<div align="center">
+<img src="imgs/lr_1.png" />
+</div>
+
+그래서 일반적인 회귀식에 error의 평균이 0이라고 가정하면, 
+E(Y_i)를 두번째 줄과 같이 나타낼 수 있다. 만약 0과 1만을 구분하는 이진분류라고 했을 때, 각각을 예상하는 확률로 인해 Y_i의 기대값은 y=1일 때의 확률과 동일함을 알 수 있다. 
+
+**Logistic Regression은 어떤 범주가 들어왔을때 출력변수 Y가 I의 값을 가질 확률로 표현할 수 있다.**
+
+
+<div align="center">
+<img src="imgs/lr_2.png" />
+</div>
+
+나이에 대한 질병유무 데이터를 선형적으로 나타내기 위해, 나이를 구간화하고 구간별 질병의 비율로 나타내면 위와 같은 모양을 가진 함수로 도출할 수 있다. 
+
+<div align="center">
+<img src="imgs/lr_3.png" />
+</div>
+
+sigmoid 함수의 장점은 미분을 하게되면 sigmoid 함수의 곱으로 표현이 가능하다. 이 성질은 Gradient를 활용한 학습방식에 사용되는데 중요한 성질이다. 
+
+<div align="center">
+<img src="imgs/lr_4.png" />
+</div>
+
+$\pi$는 x가 1에 속할 확률이고, 이는 y의 기대값과 같음을 fig 1에서 알아보았다. y값이 이진인 경우에는 나머지 등호와 같이 쉽게 나타낼 수 있다. 그리고 이는 $z=\beta_0+\beta_1x$인 선형 결합의 함수를 sigmoid 함수로 전환한 것과 같다. 
+
+* parameta $\beta_1$에 대한 해석.
+
+선형회귀와 달리 비선형적인 결합으로 이루어져 있어 해석이 직관적이지 못하다. 이를 용이하게 하기 위해 '승산'을 정의한다. 
+
+승산: 성공확률을 p라고 할 때, 실패확률대비 성공확률
+
+$Odd=\frac{p}{1-p}$
+
+<div align="center">
+<img src="imgs/lr_5.png" />
+</div>
+
+승산의 개념을 Logistic Regression에 도입한다면, 
+
+1에 속하지 않을 확률 대비, 1에 속할 확률로 나타나며, 아래와 같이 표현할 수 있다. 
+
+$Odds=\frac{\pi(X=x)}{1-\pi(X=x)}$
+
+odd값에 log를 취하면, 단순한 선형결합의 형태로 변환할 수 있다. 결과적으로 beta를 추정하기 위한 수식이 더 직관적으로 변화했다. 
+
+따라서, 우변 수식에서 beta1은 x가 한단위 증가했을 때 log(odds)의 증가량을 나타낸다. 
+
+<div align="center">
+<img src="imgs/lr_6.png" />
+</div>
+
+<div align="center">
+<p>Detail Review untill figure 6</p>
+<img src="imgs/lr_7.png" />
+<img src="imgs/lr_8.png" />
+</div>
+
+LR은 실질적으로 비선형결합으로 표현되지만, 승산의 log를 이용하여 선형 결합과 같은 형태로 나타낼 수 있다. 
+
+* 파라미터 추정($\beta_0,...,\beta_p$)
+
+<div align="center">
+<img src="imgs/lr_9.png" />
+</div>
+
+이진 분류에 대하여 특정 클래스일 확률을 pi로 정의했을 때 그의 반대는 1-pi이고, 이에 대한 확률함수는 $f_i(y_i)$와 같이 나타낼 수 있다. 
+
+확률 함수를 가지고 이를 모두 곱하여 얻어낸 지표를 Likelihood라고 한다. 곱셈은 log를 통해 덧셈으로 표현할 수 있고, 이를 간단히 하면 선형 결합에 대한 y와 선형결합을 지수 승한것 과 같은 형태로 정리할 수 있다. 
+
+<div align="center">
+<img src="imgs/lr_10.png" />
+</div>
+
+<div align="center">
+<img src="imgs/lr_11.png" />
+</div>
+
+Log Likelihood를 활용하여 CrossEntrophy 지표로 활용할 수 있다. CrossEntrophy는 Log Likelihood를 음수화 한 값이며, 이의 목적은 기댓값을 최소화 하는 것이다. 
+
+Log Likelihood의 목표는 입력분포 p(x)와 파라미터를 받아 출력분포 q(x)의 확률을 최대화 하는 것이고,
+
+이와 반대로 CrossEntrophy는 입력분포 p(x)와 출력분포 q(x)의 차이를 최소로 하는 것이다. 
+
+<div align="center">
+<img src="imgs/lr_12.png" />
+</div>
+
+
+<div align="center">
+<img src="imgs/lr_13.png" />
+</div>
+

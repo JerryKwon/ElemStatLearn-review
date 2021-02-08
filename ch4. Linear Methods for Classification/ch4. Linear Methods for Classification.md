@@ -14,7 +14,7 @@
 <img src="imgs/eq_4_1.png" />
 </div>
 
-이를 $log[p/(1-p)]$에 대해 단조변환하게 되면, 
+이를 여러 변환 방법 중 $log[p/(1-p)]$(Logit Transform)에 대해 단조변환하게 되면, x에 대한 Linear equation으로 정리할 수 있다. 
 
 <div align="center">
 <img src="imgs/eq_4_2.png" />
@@ -35,7 +35,9 @@
 <img src="imgs/eq_4_3.png" />
 </div>
 
-Y가 K개수의 class만큼 늘었기 때문에, 추정해야하는 coefficieint Beta의 값 또한 (p+1) X K 행렬로 나타난다. 
+분류 문제를 linear regression 방식으로 나타내면 수식 4.3.과 같아진다. Y가 K개수의 class만큼 늘었기 때문에, 추정해야하는 coefficieint Beta의 값 또한 (p+1) X K 행렬로 나타난다. 
+
+즉, 각각의 Class에 대해 Linear Regression을 수행하는 것이다.
 
 * 4.3.의 식으로 추정한 estimator에 따른 수식은 $\hat{f}(X)^T = (1,x^T)\hat{B}$
 * 각 row 별로 k 클래스의 $\hat{f}(X)^T$ 중에 가장 큰 값을 예측값이라고 하면, 예측한 결과값을 아래와 같이 나타낼 수 있다. 
@@ -56,13 +58,21 @@ Y가 K개수의 class만큼 늘었기 때문에, 추정해야하는 coefficieint
     <img src="imgs/eq_4_5.png" />
     </div>
 
+    **B** is coefficient vector for class_K in column-wise.
+
 fit된 vector로 새 관측값을 분류하게 되면,
 
 <div align="center">
 <img src="imgs/eq_4_6.png" />
 </div>
 
-regression approach의 심각한 단점은 예측하고자하는 클래스 값이 3개 이상인 경우이다. 회귀 모델의 엄격성으로 인해 클래스는 상호간에 겹쳐질 수 있다. 
+이는, 회귀의 ridge 방식에서 사용하는 squared norm 이  다중 분류를 위해 회귀식을 사용하는 선형모델과 같기 때문에 수식 4.5.를 4.6.(regression per column)과 같이 나타낼 수 있다. 
+
+regression approach의 심각한 단점은 예측하고자하는 클래스 값이 3개 이상인 경우이다. 회귀 모델의 엄격성으로 인해 클래스는 상호간에 겹쳐질 수 있다(Masking problem). 
+
+<div align="center">
+<img src="imgs/fig_4_3_1.png" />
+</div>
 
 <div align="center">
 <img src="imgs/fig_4_3.png" />
@@ -73,6 +83,10 @@ regression approach의 심각한 단점은 예측하고자하는 클래스 값�
 그래서 class의 수 K가 3이상이라면 K-1 수준의 polynomial feature를 생성해야 이를 해결할 수 있을 것이다. 
 
 이를 p차원의 input 값, K개의 class로 일반화하게 되면, K-1, $O(p^{K-1})$의 수준과 복잡도를 해당 문제를 해결하는데 소요된다. 
+
+**Why Linear Regression could not classify over two classes?**
+
+이는 linear regression 방식은 Target / The other 방식으로 대상을 분류하기 때문이다. LDA는 두 클래스 샘플간의 결정경계를 구하여 모든 클래스들을 구분할 수 있다. 
 
 ### 4.3. Linear Discriminant Analysis
 
@@ -158,15 +172,41 @@ $Pr(G|X)$을 계산하기 위해서는 아래의 두 element들이 필요하고
 <img src="imgs/eq_4_7.png" />
 </div>
 
+$$
+\begin{aligned}
+Pr(A|B) &= \frac{Pr(A\cap{B})}{Pr(B)} \\
+Pr(B\cap{A}) &= Pr(B|A)*Pr(A) \\
+\\
+Pr(G=k|X=x) &= \frac{Pr(G=k)\cap{Pr(X=x)}}{Pr(X=x)} \\
+&= \frac{Pr(X=x)\cap{Pr(G=k)}}{\underset{l=1}{\overset{k}{\sum}}f_l(x)*\pi_l} \\
+&= \frac{f_k(x)\pi_k}{\underset{l=1}{\overset{k}{\sum}}f_l(x)*\pi_l}
+\end{aligned}
+$$
+
+
 이를 구하기 위해서는 $f_k(x)$를 알아내야만 하고, 이를 찾는것이 $Pr(G=k|X=x)$를 찾는것과 동일하다고 할 수 있다. 
 
 그렇다면, 각각의 class들의 분포가 다변량정규분포(multivariate Gaussian[Normal Distribution])를 따른다고 가정하자.
 
-그렇다면 LDA는 각각의 클래스들의 샘플이 공통적인 공분산 matrix $\sum_k=\sum\forall{k}$를 가정하는 상황에서 활용된다.
+<div align="center">
+<img src="imgs/eq_4_8.png" />
+</div>
+
+다변량 정규분포는 1차원 정규분포를 다차원으로 확장한 것을 말한다. 
+
+
+그리고, LDA는 각각의 클래스들의 샘플이 공통적인 공분산 matrix $\sum_k=\sum\forall{k}$를 가정하는 상황에서 활용된다.
 
 <div align="center">
 <img src="imgs/eq_4_9.png" />
 </div>
+
+$$
+\begin{aligned}
+&=(log\pi_k+x^T\sum^{-1}\mu_k-\frac{1}{2}\mu_k^T\sum^{-1}\mu_k)-(log\pi_l+x^T\sum^{-1}\mu_l-\frac{1}{2}\mu_l^T\sum^{-1}\mu_l) \\
+&= \delta_k(x)-\delta_l(x)
+\end{aligned}
+$$
 
 임의의 2개의 클래스를 비교하기 위한 수식은 x에 대해 선형적인 방정식으로 나타난다. 이는 k와 l의 결정경계가 p-dimensional한 초평면위에 x에 대해 선형적인 형태로 나타남을 의미한다. 만약 input dataset을 class 1, class 2 등등에 대해 분류하더라도 임의의 초평면에 의해 분리될 것이다. 
 
@@ -219,6 +259,62 @@ LDA와 QDA가 좋은 결과를 내는 이유는 결정경계를 선형 또는 2�
 
 ### 4.3.1. Regularized Discriminant Analysis
 
+<div align="center">
+<img src="imgs/eq_4_13.png" />
+</div>
+
+LDA와 QDA를 혼합한 방식을 일컬으며, ridge회귀와 비슷한 형태를 띈다. alpha는 LDA와 QDA의 정도를 조절하는 파라미터이다. 
+
+### 4.3.2. Computation for LDA
+
+LDA와 QDA의 계산은 대부분 공분산 행렬을 다른 형태로 간단히함으로써 나타난다. $\hat{\sum}_k=U_kD_kU_k^T$로써 공분산 행렬을 간단히할 수 있고 Uk는 pxp의 직교행렬, Dk는 양의 고유값 dkl의 대각행렬이다. 
+
+<div align="center">
+<img src="imgs/eq_4_12_1.png" />
+</div>
+
+위의 간단화한 수식을 활용하여 LDA를 계산하는 방식은 아래의 절차를 따른다. 
+
+* 데이터가 공통적인 공분산을 따르도록 공분산 행렬을 $\hat{\sum}X^*\leftarrow{D^{-\frac{1}{2}}U^TX}$이와 같이 추정한다. 
+* 변환된 공간에서 중심점에 가장 가까운 클래스로 분류한다. 
+
+### 4.3.3. Reduced-Rank Linear Discriminant Analysis
+
+LDA가 유명한 이유는 데이터를 저차원에 정보 손실 없이 projection함으로써 나타낼 수 있기 때문이다. 이러한 저차원에 투영된 데이터의 중심점의 분산의 개념을 활용하여 최적의 경계를 찾는법을 Fisher는 찾아냈다. 
+
+LDA의 optimal subspace의 순서를 찾기위한 순서는 아래와 같다. 
+
+* Kxp 행렬의 class 중앙점 Matrix X, 그리고 공통 공분산 행렬 W(클래스 내 분산)를 계산
+
+* W의 eigen-decomposition을 활용한 $M^*=MW^{-\frac{1}{2}}$ 계산
+
+* between-class covariance $B^*$를 $B^*=V^*D_BV^{*^T}$ $V^*$의 컬럼 $v^*_l$은 처으부터 끝까지 최적의 coordinate가 순서대로 정렬되어 있다. 
+
+Fisher의 방식은 샘플들이 가우시안 분포를 따라야 한다는 가정을 취하지 않았고 아래와 같이 문제를 정의했다.
+
+'클래스간 분산이 클래스 내 분산보다 상대적으로 최대화할 수 있는 선형조합인 $Z=a^TX$를 찾아야 한다.'
+
+<div align="center">
+<img src="imgs/fig_4_9.png" />
+</div>
+
+클래스 간의 분산은 Z의 클래스 평균들의 분산을 의미하고, 클래스 내 분산은 평균에 대해 버친 분산을 의미한다. 이는 위의 그림으로 나타난다. 비록 두 접하는 클래스의 중심점이 멀수록 좋지만, 분산의 특성상 유의미한 접하는 영역이 있게 된다. 분산을 위와 같이 조정함으로써 겹치는 영역을 최소화하는 방향을 찾을 수 있다. 
+
+* between-class variance of Z: $a^TBa$ 
+* within-class variance of Z: $a^TWa$
+
+<div align="center">
+<img src="imgs/eq_4_15.png" />
+<img src="imgs/eq_4_16.png" />
+</div>
+
+수식 4.15를 활용하여 최적의 a1를 계산하기 위해서 v1을 활용하고, a2는 그전의 정보를 활용하여 at까지의 direction을 구한다. al은 'discriminant coordinate'(canonical variate)라고 한다. 
+
+* 공통의 공분산을 가진 가우시안 분류 문제는 linear decision boundary문제로 풀어낼 수 있다. 이는 데이터를 W의 공분산을 가지도록 나타낸다음에 가까운 중심점으로 분류를 수행한다.
+
+* 중심점까지의 상대적거리만을 계산할 수 있기 때문에 조정된 공간에서 중심점에 의해 데이터를 부분공간에 매핑할 수 있다.
+
+* 부분공간은 중심점 분리에 의해 연속적으로 최적의 부분공간으로 분해한다. 
 
 ## 4.4. Logistic Regression
 

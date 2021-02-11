@@ -96,6 +96,9 @@ regression approach의 심각한 단점은 예측하고자하는 클래스 값�
 
 <a href="https://www.youtube.com/watch?v=geIlsP8aPvg">https://www.youtube.com/watch?v=geIlsP8aPvg</a>
 
+<a href="https://godongyoung.github.io/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D/2018/01/23/ISL-Classification_ch4.html">https://godongyoung.github.io/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D/2018/01/23/ISL-Classification_ch4.html</a>
+
+<a href="https://blueskyvision.tistory.com/351">https://blueskyvision.tistory.com/351</a>
 
 판별분석(Discriminant Analysis): 두 개 이상의 모집단에서 추출된 표본들이 지니고 있는 정보(표본들이 Gaussian Distribution을 따른 다던지...)를 이용하여 이 표본들이 어느 모집단에서 추출된 것인지를 결정해 줄 수 있는 기준을 찾는 분석법
 
@@ -324,6 +327,14 @@ Fisher의 방식은 샘플들이 가우시안 분포를 따라야 한다는 가�
 
 <a href="https://www.youtube.com/watch?v=Vh_7QttroGM">[핵심 머신러닝]로지스틱회귀모델 2</a>
 
+<a href="https://lee-jaejoon.github.io/stat-logistic/">Logistic Regression</a>
+
+<a href="https://godongyoung.github.io/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D/2018/01/23/ISL-Classification_ch4.html">[ISL] 4장 - 분류(로지스틱, LDA, QDA) 이해하기</a>
+
+<a href="https://hyeongminlee.github.io/post/bnn002_mle_map/">Maximum Likelihood Estimation(MLE) & Maximum A Posterior(MAP)</a>
+
+<a href="https://hyeongminlee.github.io/post/bnn001_bayes_rule/">Bayes Rule (베이즈 룰)</a>
+
 필요성: 회귀모델을 활용하여 범주형 반응 변수를 예측하기 위함.
 
 그러나, 연속적인 값이 아닌 범주형 값이기 때문에 다른 방식으로 접근해야 할 것이다. 
@@ -423,3 +434,161 @@ Log Likelihood의 목표는 입력분포 p(x)와 파라미터를 받아 출력�
 <img src="imgs/lr_13.png" />
 </div>
 
+==================================================
+
+Logistic Regression은 K class들의 사후확률을 linear function으로 모델링하기 위해 고안되었다. 
+(<=> LDA, LDA는 Sample들의 평균과 분산을 활용하여 decision boundary를 추정함)
+
+
+<div align="center">
+<img src="imgs/eq_4_17.png" />
+<img src="imgs/eq_4_18.png" />
+</div>
+
+model은 식 4.17과 같이 LDA처럼 logit transformation된 형태로 용어들을 정의한다. 분모에 깔리는 비교를 위한 클래스는 임의로 선택되며, 각 클래스별 결과값을 추론하는데 필요한 beta의 값 $\Theta$는 $\{\beta_{10},\beta_1^T,...,\beta_{(K-1)0},\beta^T_{K-1}\}$이고, X가 주어졌을때 k클래스에 속할 확률을 간단히 하여 $p_k(x;\Theta)$라고 하자.
+
+클래스의 수가 2개인 경우 이 모델은 간단한 linear function이 된다.
+
+### 4.4.1. Fitting Logistic Regression Models
+
+Logistic Regression은 linear function을 구하는데 있어 likelihood function을 활용하고 이를 최대화하는 maximum likelihood를 G와 X의 conditional likelihood로 linear function을 fit한다. 
+
+<div align="center">
+<img src="imgs/eq_4_19.png" />
+</div>
+
+이를 수식으로 나타내면 수식 4.19와 같다.
+
+($p_k(x_i;\Theta)=Pr(G=k|X=x_i;\Theta)$)
+
+우리는 하나의 데이터 포인트에 대해서, 모든 클래스 각각에 속할 확률($p(\Theta|x_i$)을 나타내야 한다. 그래서 이를 위해 likelihood $p_k(\Theta|Data)$ 들로 목표를 계산하여 높은 확률을 띄는 클래스로 분류하는 것이다.
+
+그러나, $\Theta$는 우리가 추정해야할 parameter이기 때문에 Bayes' Rule에 따라 likelihood와 prior를 통해 결과를 추정하게 된다. 그러나 prior는 경험적으로 얻을 수 있는 값이기 때문에 likelihood만을 계산하면 된다. 그리고 확률을 최대화 하기 위해서는 likelihood($p_k(x_i;\Theta)=Pr(G=k|X=x_i;\Theta)$)를 최대화 해야하는 데, 그렇기 때문에 MLE가 최적의 결과값 $p_k(\Theta|Data)$를 계산하는데 목표 및 기준점이 될 수 있다. 
+
+* Posterior: 주어진 대상이 주어졌을 경우, 구하고자하는 대상의 확률분포 $p(\Theta|D)$
+
+* Likelihood: 구하고자하는 대상을 모르지만 안다고 가정했을 경우, 주어진 대상의 분포. $p(D|\Theta)$
+
+* prior: 주어진 대상과는 무관하게 상식을 통해 우리가 구하고자 하는 대상에 대해 이미 알고 있는 사전 정보. $p(\Theta)$
+
+여기서 likelihood로 도출되는 값은 사실 확률이다. 따라서 목표하는 모든 likelihood가 최대로 되는 것을 반영하기 위해서는 각 point i에 대한 확률값을 들이 모두 최대가 되어어야 하고 이를 모두 곱셈으로 반영한 값 또한 최대가 되어야 한다.
+
+따라서 이를 $p(Data|\Theta)$로 나타낼 수 있고, 이는 위의 수식과는 조금 다른 $\overset{N}{\underset{i=1}{\prod}}p_{g_i}(x_i;\Theta)$가 된다. 이를 log를 취하여 수식 4.19.와 같이 나타내는 이유는 log를 취하여도 scale외에는 달리지는 점이 없고, 상대적으로 편한 덧셈연산으로 변경할 수 있기 때문이다.
+
+계속해서 2진 클래스에 대한 분류에 대해서만 알아보자
+
+* 0/1 => $y_i$
+* $y_i=1$ when $g_i=1$ -> $p_1(x;\Theta)=p(x;\Theta)$
+* $y_i=0$ when $g_i=2$ -> $p_2(x;\Theta)=1-p(x;\Theta)$
+
+<div align="center">
+<img src="imgs/eq_4_20.png" />
+</div>
+
+$$
+\begin{aligned}
+&=\underset{i=1}{\overset{N}{\sum}}\{y_iloge^{\beta^Tx_i}-y_i{log(1+e^{\beta^Tx_i})}-(1-y_i)log(1+e^{\beta^Tx_i})\}
+\end{aligned}
+$$
+
+Logistic Regression을 2개의 클래스만으로 수행하기 때문에 $\beta=\{beta_{10},\beta_1\}$와 같다. 
+
+식 4.20.을 최대화하기 위해 이의 도함수를 0으로 만드는 지점을 찾는다. 
+
+<div align="center">
+<img src="imgs/eq_4_21.png" />
+</div>
+
+안타깝게도 수식 4.21.은 beta에 대해 비선형적으로 식이 나타난다. 이러한 문제를 해결하기 위해 2차 도함수와 Hessian Matrix를 필요로하는 Newton-Raphson 알고리즘을 사용한다.
+
+<div align="center">
+<img src="imgs/eq_4_22.png" />
+</div>
+
+#### Newton-Raphson Method (Iteratively Reweighted Least Squares Method)
+
+1차 미분으로는 해를 찾을 수 없는 경우, 위의 방식으로 해를 찾는다. 이 방법은 어떤 함수의 값이 0이 되는 점을 찾는데 사용되는 numerical method이며, 접선을 그려 접선함수의 값이 0이 되는 값을 찾고, 새로 찾은 X 값에서 다시 접선을 그리는 방법을 반복하여 함수의 값이 0이 되는 점을 찾는다. 
+
+<div align="center">
+<img src="imgs/eq_4_23.png" />
+<img src="imgs/NewtonIteration_Ani.gif" />
+</div>
+
+위의 방법을 활용하여 Logistic Regression의 일차, 이차 도함수를 간단한 행렬의 곱으로 나타낼 수 있다.
+
+* y: $y_i$값들의 벡터
+* X: $x_i$ 값들의 NX(p+1) 행렬
+* p: i번째 element로 fitting된 확률의 벡터 -> $p(x_i;\beta^{old})$
+* W: i번째 element로 가중치들의 NXN 대각행렬 -> $p(x_i;\beta^{old})(1-p(x;\beta^{old}))$
+
+<div align="center">
+<img src="imgs/eq_4_24_25.png" />
+<img src="imgs/eq_4_26.png" />
+</div>
+
+수식 4.26.의 2번째 -> 3번째식을 weighted least square 방식으로 4.27을 통해 나타낸다. 
+
+<div align="center">
+<img src="imgs/eq_4_27.png" />
+</div>
+
+이 방식은 위의 그림과 같이 여러번의 iteration을 반복함으로써 W와 z를 계산한다. 각각의 iteration은 weighted square problem을 다루는 것과 같아, 이를 다른방식으로 IRLS 방식이라고 한다. 
+
+multiclass인 경우에는 위의 방식으로 적용하여 나타낼 수 있지만, vector가 K-1개의 respond값들과 각 관측치마다 nondiagonal weight matrix가 필요하다.
+
+### 4.2.2. Example: South African Heard Disease
+
+<div align="center">
+<img src="imgs/tab_4_2.png" />
+<img src="imgs/tab_4_3.png" />
+</div>
+
+### 4.4.5. Logistic Regression or LDA?
+
+LDA에서 임의의 k-1 클래스 중의 k class와 K간의 log-posterior odds는 x에 대한 linear function임을 수식 4.9. 에서 살펴보았다.
+
+$$
+\begin{aligned}
+log\frac{Pr(G=k|X=x)}{Pr(G=K|X=x)}&=log\frac{\pi_k}{\pi_K}-\frac{1}{2}(\mu_k+\mu_K)^T\Sigma^{-1}(\mu_k-\mu_K)+x^T\Sigma^{-1}(\mu_k-\mu_K) \\
+&= \alpha_{k0}+\alpha^T_kx\ (4.33)
+\end{aligned}
+$$
+
+그런데 이는 4.33. 과 같이 선형으로 나타나 질 수 있고, 이는 각 클래스의 분포가 Gaussian Density와 유사한 공분산 행렬을 가진다는 가정으로 인해 linear function으로 나타낼 수 있었다. 그리고, linear logistic model 또한 logit transform을 통해 linear function으로 나타낼 수 있다.
+
+<div align="center">
+<img src="imgs/eq_4_34.png" />
+</div>
+
+둘 모두 logit linear form 형태로 나타나 비슷해보이지만, 둘은 linear function에 fit하는 방식이 다르다. Logistic Regression은 적은 가정을 통해 더 일반적인 모델을 생성한다. 
+
+<div align="center">
+<img src="imgs/eq_4_36.png" />
+</div>
+
+* Logistic Regression: 조건부확률 Pr(G|X)에 맞춰 conditional likelihood를 최대화함으로써 linear function의 파라미터를 추정.
+
+<div align="center">
+<img src="imgs/eq_4_37.png" />
+</div>
+
+* LDA: 결합밀도함수를 기반으로 full log-likehihhod를 최대화하여 linear function의 파라미터를 추정.
+
+    * $\phi$: Gaussian density function
+    * According to Standard Normal Theory easily estimates $\hat{\mu}_k,\hat{\Sigma},and,\hat{\pi}_k$
+
+수식 4.33.의 LDA에서 도출한 Gaussian Parameter들은 Maximum-likelihood로 올바른 estimate를 추정하는데 에도 활용할 수 있다. 그리고 conditional case가 아닐 때에도 Marginal Density는 추정시에 역할을 수행할 수 있는데, 이를 mixture density라고 한다. 
+
+<div align="center">
+<img src="imgs/eq_4_38.png" />
+</div>
+
+LDA과 Logistic Regression에서 부수적인 항목과 제약을 거는것이 어떤 역할을 했을까? 모델에 추가적인 가정을 부여함으로써, 추정할 파라미터에 대해 많은 정보를 가질 수 있고, 추정시 더 효율적으로 추정할 수 있다. 예를 들어, 각각의 샘플이 Gaussian Distribution을 따르게 되면, 최악의 경우와 점근적으로 비교했을때 30%의 효율을 나타낸다(30%의 데이터를 절감).
+
+그러나, LDA에서 관측치들이 유사한 공분산 행렬을 가진다는 것을 가정하고 추정하는 것은 outlier에 robust하지 못한 문제점이 있을 수 있음을 시사한다.
+
+mixture formulation에서는 심지어 class label가 없는 관측값이라도 파라미터에 대한 정보는 명확하게 가지고 있다. 이러한 강력한 가정들로 인해 이런 류의 정보를 얻을 수 있다. 
+
+marginal likelihood는 class density들이 가시적이어야 한다는 regularizer로 작동할 수 있다. 예를들어 2 클래스짜리 logistic regression이 차원에서 완벽히 분리된다면 파라미터의 maximum likelihood 추정치는 infinity가 된다. 
+
+이렇게 모델에 대해 가정을 하는 것이 결코 종종 X의 구성값이 정량적변수인경우에는 옳은것은 아니다. 일반적으로 더 적은 가정으로 인해 logistic regression은 안전하고 LDA보다 더 robust하다고 판단된다. 

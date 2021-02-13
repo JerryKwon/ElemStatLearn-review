@@ -211,6 +211,28 @@ $$
 \end{aligned}
 $$
 
+#### Derive Equation 4.9
+
+$$
+\begin{aligned}
+\frac{Pr(G=k|X=x)}{Pr(G=l|X=x)} &= \frac{\frac{Pr(X=x|G=k)*Pr(G=k)}{Pr(X=x)}}{\frac{Pr(X=x|G=l)*Pr(G=l)}{pr(X=x)}} \\
+&= \frac{Pr(X=x|G=k)*Pr(G=k)}{Pr(X=x|G=l)*Pr(G=l)} \\
+
+log\frac{Pr(G=k|X=x)}{Pr(G=l|X=x)} &= log \frac{Pr(X=x|G=k)*Pr(G=k)}{Pr(X=x|G=l)*Pr(G=l)} \\
+&= log\frac{Pr(X=x|G=k)}{Pr(X=x|G=l)}+log\frac{Pr(G=k)}{Pr(G=l)} \\
+&= log\frac{f_k(x)}{f_l(x)}+log\frac{\pi_k}{\pi_l} \\
+&= -\frac{1}{2}[\{plog2\pi+log|\Sigma_k|+(x-\mu_k)^T\Sigma_k^{-1}(x-\mu_k)\}-\{plog2\pi+log|\Sigma_l|+(x-\mu_l)^T\Sigma_l^{-1}(x-\mu_l)\}]+log\frac{\pi_k}{\pi_l}\\
+&(\because{f_K(x))=\frac{1}{(2\pi)^{p/2}|\Sigma_K|^{1/2}}e^{-\frac{1}{2}(x-\mu_K)^T\Sigma_K^{-1}(x-\mu_K)}}) \\
+&=-\frac{1}{2}[(x-\mu_k)^T\Sigma_k^{-1}(x-\mu_k)-\{(x-\mu_l)^T\Sigma_l^{-1}(x-\mu_l)\}] -\frac{1}{2}(log|\Sigma_k|-log|\Sigma_l|)+log\frac{\pi_k}{\pi_l} \\
+&=-\frac{1}{2}(\mu_k+\mu_l)^T\Sigma^{-1}(\mu_k-\mu_l)+x^T\Sigma^{-1}(\mu_k-\mu_l)+log\frac{\pi_k}{\pi_l} \\
+&(\because{Class\ k\ and\ l\ has\ same\ Covariance;\ Pooled\ Variance}) \\
+&(\Sigma_k=\Sigma_l=\Sigma=[\frac{n_1-1}{(n_1-1)+(n_2-1)}]\Sigma_1+[\frac{n_2-1}{(n_1-1)+(n_2-1)}]\Sigma_2) \\
+\therefore{log\frac{Pr(G=k|X=x)}{Pr(G=l|X=x)}}&=log\frac{\pi_k}{\pi_l}-\frac{1}{2}(\mu_k+\mu_l)^T\Sigma^{-1}(\mu_k-\mu_l)+x^T\Sigma^{-1}(\mu_k-\mu_l)
+
+\end{aligned}
+$$
+
+
 임의의 2개의 클래스를 비교하기 위한 수식은 x에 대해 선형적인 방정식으로 나타난다. 이는 k와 l의 결정경계가 p-dimensional한 초평면위에 x에 대해 선형적인 형태로 나타남을 의미한다. 만약 input dataset을 class 1, class 2 등등에 대해 분류하더라도 임의의 초평면에 의해 분리될 것이다. 
 
 <div align="center">

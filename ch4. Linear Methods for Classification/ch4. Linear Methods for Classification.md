@@ -273,11 +273,25 @@ class k와 l간의 결정경계는 2차 방정식인 $\{x:\delta_k(x)=\delta_l(x
 <img src="imgs/fig_4_6.png" />
 </div>
 
-위의 그림은 결정경계가 2차방정식 즉 곡선의 형태를 나타낸다고 가정했을 때, 접근하는 두 가지 방법론을 나타낸다. 좌측은 feature를 2차식의 형태로 polynomial feature를 만들어 반영하였고, 우측은 QDA를 적용했을 때의 결정경계를 나타낸다. 
+위의 그림은 결정경계가 2차방정식 즉 곡선의 형태를 나타낸다고 가정했을 때, 접근하는 두 가지 방법론을 나타낸다. 좌측은 feature를 2차식의 형태로 polynomial feature를 만들어 반영(LDA의 기본 가정인 클래스의 분산은 모두 합동분산(Pooled Variance)을 따름)하였고, 우측은 QDA를 적용했을 때의 결정경계를 나타낸다. 
 
 QDA의 추정치는 LDA와 각각의 클래스들에 대한 공분산행렬이 다르다는 것만들 제외하면 유사하다. 그러나 차원(컬럼)의 수 p가 늘어나게 되면 추정해야하는 파라미터 또한 엄청나게 증가하게 된다. 
 
 * LDA: (K-1) X (p+1) parameters
+
+    $\delta_k(x)=x^T\Sigma^{-1}\mu_k-\frac{1}{2}\mu_k^T\Sigma^{-1}\mu_k+log\pi_k$,
+
+    LDA는 결국 기준이 되는 클래스 K와 나머지 클래스 k,l,...간의 비교로 결정경계를 결정하기 때문에 (K-1)번의 파라미터 계산이 필요하다. 그리고 한번의 파라미터 계산에는,
+
+    $$
+    \begin{aligned}
+    \delta_k(x)-\delta_K(x)&=x^T\Sigma^{-1}\mu_k-\frac{1}{2}\mu_k^T\Sigma^{-1}\mu_k+log\pi_k - \{x^T\Sigma^{-1}\mu_K-\frac{1}{2}\mu_K^T\Sigma^{-1}\mu_K+log\pi_K\} \\
+    &= x^T\Sigma^{-1}(\mu_k-\mu_K)-\frac{1}{2}(\mu_k+\mu_K)\Sigma^{-1}(\mu_k-\mu_K)+log\frac{\pi_k}{\pi_K} \\
+    &= x^T\Sigma^{-1}(\mu_k-\mu_K)\rightarrow{p\ parameters}, remainder\rightarrow{1} \\
+    &= p+1\ parameters
+    \end{aligned}
+    $$
+
 * QDA: (K-1) X {p(p+3)/2+1} parameters
 
 LDA와 QDA가 좋은 결과를 내는 이유는 결정경계를 선형 또는 2차식의 곡선임을 가정할 뿐만 아니라, 각각의 추정해야하는 class들의 분포가 정규분포를 따른다고 가정하기 때문이다. 
@@ -298,26 +312,50 @@ LDA와 QDA의 계산은 대부분 공분산 행렬을 다른 형태로 간단히
 <img src="imgs/eq_4_12_1.png" />
 </div>
 
+
+* why $log|\hat{\Sigma_k}|=\sum_llogd_{kl}$?
+
+    $$
+    \begin{aligned}
+    \hat{\Sigma}_k &= U_kD_kU_k^T \\
+    |\hat{\Sigma}_k| &= |U_k||D_kU_k^T| \\
+    &= |D_kU_k^T||U_k| \\
+    &= |D_k|I \\
+    &= \prod^ld_{kl} \\
+    log|\hat{\Sigma}_k| &= \sum^l logd_{kl}
+    \end{aligned}
+    $$
+
+* Idea of LDA.
+
+    두 클래스에 대한 $\delta$를 구분하는데 있어 중요한 항목은 수식 4.12에서 가운데 해당하는 부분이다.
+
+    $\delta_k(x)=-\frac{1}{2}log|\Sigma_k|-\frac{1}{2}(x-\mu_k)^T\Sigma_k^{-1}(x-\mu_k)+log\pi_k$
+
+    $-\frac{1}{2}(x-\mu_k)^T\Sigma_k^{-1}(x-\mu_k)$
+
+    위의 수식에서 공분산 Sigma를 제외하면, 새로운 datapoint x에 대해 k클래스의 중심점으로부터의 Euclidean Distance를 나타낸다. Sigma를 1/2씩 분리하여($(x-\hat{\mu}_k)^T\hat{\Sigma}^{-\frac{1}{2}}$,$\hat{\Sigma}^{-\frac{1}{2}}(x-\hat{\mu}_k)^T$) 각각에 분배하면, 클래스의 분산을 Sphere(원형으로; Identical Shape)하게 Transform한 공간에서의 distance를 의미한다. 
+
 위의 간단화한 수식을 활용하여 LDA를 계산하는 방식은 아래의 절차를 따른다. 
 
-* 데이터가 공통적인 공분산을 따르도록 공분산 행렬을 $\hat{\sum}X^*\leftarrow{D^{-\frac{1}{2}}U^TX}$이와 같이 추정한다. 
-* 변환된 공간에서 중심점에 가장 가까운 클래스로 분류한다. 
+* 데이터가 공통적인 공분산을 따르도록 공분산 행렬을 $\hat{\sum}:X^*\leftarrow{D^{-\frac{1}{2}}U^TX}$ 고유값분해로 얻은 행렬들의 조합 Sigma($U_kD_kU_k^T$)를 활용하여 변환한다. 이를 통해 새로운 추정치는 Identical Matrix를 가진다.   
+* 변환된 공간에서 datapoint x를 중심점에 가장 가까운 클래스로 분류한다. 그리고 prior probability로 distance외의 요인을 구분하는데 사용한다.
 
 ### 4.3.3. Reduced-Rank Linear Discriminant Analysis
 
-LDA가 유명한 이유는 데이터를 저차원에 정보 손실 없이 projection함으로써 나타낼 수 있기 때문이다. 이러한 저차원에 투영된 데이터의 중심점의 분산의 개념을 활용하여 최적의 경계를 찾는법을 Fisher는 찾아냈다. 
+LDA가 유명한 이유는 데이터를 저차원에 정보 손실 없이 projection(how? like PCA)함으로써 나타낼 수 있기 때문이다. 이러한 저차원에 투영된 데이터의 중심점의 분산의 개념을 활용하여 최적의 경계를 찾는법을 Fisher는 찾아냈다. 
 
 LDA의 optimal subspace의 순서를 찾기위한 순서는 아래와 같다. 
 
-* Kxp 행렬의 class 중앙점 Matrix X, 그리고 공통 공분산 행렬 W(클래스 내 분산)를 계산
+* 1-1. Kxp 행렬의 class 중앙점 Matrix X, 그리고 공통 공분산 행렬 W(클래스 내 분산; $\hat{\Sigma}^{-1}$)를 계산
 
-* W의 eigen-decomposition을 활용한 $M^*=MW^{-\frac{1}{2}}$ 계산
+* 1-2. W의 eigen-decomposition을 활용한 $M^*=MW^{-\frac{1}{2}}$ 계산 (Space Transformation)
 
-* between-class covariance $B^*$를 $B^*=V^*D_BV^{*^T}$ $V^*$의 컬럼 $v^*_l$은 처으부터 끝까지 최적의 coordinate가 순서대로 정렬되어 있다. 
+* 2\. between-class covariance $B^*$를 $B^*=V^*D_BV^{*^T}$와 같이 계산한다.  $V^*$의 컬럼 $v^*_l$(principal component)은 처으부터 끝까지 최적의 coordinate가 순서대로 정렬되어 있다. 
 
 Fisher의 방식은 샘플들이 가우시안 분포를 따라야 한다는 가정을 취하지 않았고 아래와 같이 문제를 정의했다.
 
-'클래스간 분산이 클래스 내 분산보다 상대적으로 최대화할 수 있는 선형조합인 $Z=a^TX$를 찾아야 한다.'
+'클래스간 분산이 클래스 내 분산보다 **상대적으로 최대화할 수 있는(Dimension Reduction)** 선형조합인 $Z=a^TX$를 찾아야 한다.'
 
 <div align="center">
 <img src="imgs/fig_4_9.png" />
